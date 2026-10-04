@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>3X APP</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>3X APP</h1>
+          <p id="identity" class="muted"></p>
+        </div>
+      </header>
+      <p id="message" role="status" aria-live="polite">Загружаем…</p>
+      <section id="access" class="card" hidden>
+        <h2>Доступ к приложению</h2>
+        <p id="access-message" role="status"></p>
+      </section>
+      <section id="dashboard" hidden>
+        <section class="devices">
+          <div class="section-header">
+            <h2 class="devices-heading">Устройства <span id="count" class="muted"></span></h2>
+          </div>
+          <div id="devices" class="grid"></div>
+          <button id="add">Добавить устройство</button>
+        </section>
+      </section>
+    </main>
+    <dialog id="create-dialog" aria-labelledby="create-title">
+      <form id="create-form">
+        <h2 id="create-title">Новое подключение</h2>
+        <fieldset>
+          <legend>Протокол</legend>
+          <div class="choices">
+            <label><input type="radio" name="kind" value="wireguard" />WireGuard</label
+            ><label><input type="radio" name="kind" value="amneziawg" />AmneziaWG</label>
+          </div>
+        </fieldset>
+        <p class="error" role="alert"></p>
+        <div class="actions">
+          <button type="submit">Создать</button><button type="button" class="quiet" data-close>Отмена</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="delete-dialog" aria-labelledby="delete-title">
+      <form id="delete-form">
+        <h2 id="delete-title">Удалить конфигурацию?</h2>
+        <p>Конфигурация перестанет работать.</p>
+        <p id="delete-email" class="muted"></p>
+        <p class="error" role="alert"></p>
+        <div class="actions">
+          <button type="submit" class="danger">Удалить</button
+          ><button type="button" class="quiet" data-close>Отмена</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "3x-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "check": "tsc --noEmit && node --check public/app.js && node --check public/api.js && node --check public/ui.js",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "format": "prettier --write \"src/**/*.ts\" \"public/*.{js,css,html}\" \"*.json\""
+  },
+  "dependencies": {
+    "@tma.js/init-data-node": "^2.0.8",
+    "async-mutex": "^0.5.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "~6.0.3",
+    "prettier": "^3.9.9"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
