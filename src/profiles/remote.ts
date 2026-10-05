@@ -1,6 +1,6 @@
 import { config } from '../config.js';
 import { AppError } from '../errors.js';
-import { clientEmailPattern, standardEmail } from './naming.js';
+import { clientEmailPattern, standardEmail, subscriptionEmail } from './naming.js';
 import { panel } from '../panel/client.js';
 import type { Kind } from './types.js';
 export type PanelClient = Awaited<ReturnType<typeof panel.clients>>[number];
@@ -10,7 +10,9 @@ export function ownsClient(userId: string, client: PanelClient) {
   return (
     client.group === standardEmail(userId) &&
     clientEmailPattern.test(client.email) &&
-    (client.email === standardEmail(userId) || client.email.includes('-'))
+    (client.email === standardEmail(userId) ||
+      /^[0-9a-f]{12}@3x\.local$/.test(client.email) ||
+      client.email.includes('-'))
   );
 }
 
@@ -44,6 +46,7 @@ export function publicProfile(
   inbounds: Inbound[],
 ): {
   id: string;
+  email: string;
   name: string;
   kind: Kind | 'unknown';
   protocols: string[];
@@ -70,6 +73,7 @@ export function publicProfile(
     );
   return {
     id: client.email,
+    email: client.subId ? subscriptionEmail(client.subId) : client.email,
     name: clientName(client),
     protocols,
     kind,

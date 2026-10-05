@@ -1,5 +1,5 @@
 import { initializeTelegram, request } from './api.js';
-import { $, card, icon, displayClientId } from './ui.js';
+import { $, card, icon } from './ui.js';
 let list = null;
 let busy = false;
 let deleting = null;
@@ -70,7 +70,7 @@ async function mutate(path, body, method = 'POST', dialog) {
 }
 function confirmDelete(profile) {
   deleting = profile;
-  $('#delete-email').textContent = displayClientId(profile.id);
+  $('#delete-email').textContent = profile.email;
   $('#delete-dialog .error').textContent = '';
   $('#delete-dialog').showModal();
 }

@@ -40,15 +40,12 @@ export function protocolBadges(kind, protocols = []) {
   badges.append(...(labels[kind] ?? labels.unknown).map((label) => node('span', label, 'protocol-badge')));
   return badges;
 }
-export function displayClientId(id) {
-  return id.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-([0-9a-f]{12}@3x\.local)$/i, '$1');
-}
 export function card(profile, handlers) {
   const element = node('article', '', 'card');
   const heading = node('div', '', 'card-head');
   heading.append(protocolBadges(profile.kind, profile.protocols));
   if (profile.status !== 'ready') heading.append(node('span', 'Не завершён', 'badge'));
-  element.append(heading, node('p', displayClientId(profile.id), 'muted'));
+  element.append(heading, node('p', profile.email, 'muted'));
   const actions = node('div', '', 'actions');
   if (profile.subscriptionUrl) {
     const link = new URL(profile.subscriptionUrl);

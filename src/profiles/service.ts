@@ -4,7 +4,7 @@ import { config } from '../config.js';
 import { AppError } from '../errors.js';
 import { panel } from '../panel/client.js';
 import { requireUserGroup } from './groups.js';
-import { newDeviceEmail } from './naming.js';
+import { subscriptionEmail } from './naming.js';
 import { getClient, publicProfile, ownsClient, userClients } from './remote.js';
 import { clientLimit, profileNames, type Kind } from './types.js';
 
@@ -33,13 +33,14 @@ export async function provision(userId: string, kind: Kind, retryEmail?: string)
     throw new AppError(409, `Можно создать не больше ${clientLimit} клиентов.`);
   }
   const ids = await validateInbounds(kind);
-  const email = existing?.email ?? newDeviceEmail();
+  const subId = existing?.subId ?? randomUUID();
+  const email = existing?.email ?? subscriptionEmail(subId);
   if (!existing && (await panel.find(email))) throw new AppError(409, 'Имя клиента уже занято в панели.');
   if (existing) {
     const missing = ids.filter((id) => !existing.inboundIds?.includes(id));
     if (missing.length) await panel.attach(email, missing);
   } else {
-    await panel.create(email, randomUUID(), ids, group, profileNames[kind]);
+    await panel.create(email, subId, ids, group, profileNames[kind]);
   }
   const current = await getClient(userId, email);
   if (current.group !== group || ids.some((id) => !current.inboundIds?.includes(id))) {
