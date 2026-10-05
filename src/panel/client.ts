@@ -63,10 +63,27 @@ export const panel = {
     if (!(await this.groups()).some((group) => group.name === name))
       await request('clients/groups/create', { name });
   },
-  create(email: string, subId: string, inboundIds: number[], group: string, comment: string) {
+  create(
+    email: string,
+    subId: string,
+    inboundIds: number[],
+    group: string,
+    comment: string,
+    totalGB: number,
+  ) {
     // v3.8.5 fills protocol credentials, VLESS flow, WG keys and free tunnel IPs.
     return request('clients/add', {
-      client: { email, subId, group, enable: true, totalGB: 0, expiryTime: 0, comment },
+      client: {
+        email,
+        subId,
+        group,
+        enable: true,
+        totalGB,
+        expiryTime: 0,
+        comment,
+        trafficReset: 'monthly',
+        trafficResetDay: 1,
+      },
       inboundIds,
     });
   },

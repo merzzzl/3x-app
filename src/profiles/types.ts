@@ -7,3 +7,10 @@ export const profileNames: Record<Kind, string> = {
   wireguard: 'WireGuard',
   amneziawg: 'AmneziaWG',
 };
+
+export const trafficLimitsGB: Record<Kind, number> = {
+  tls: 200,
+  mtproto: 200,
+  wireguard: 50,
+  amneziawg: 50,
+};

@@ -6,7 +6,7 @@ import { panel } from '../panel/client.js';
 import { requireUserGroup } from './groups.js';
 import { subscriptionEmail } from './naming.js';
 import { getClient, publicProfile, ownsClient, userClients } from './remote.js';
-import { clientLimit, profileNames, type Kind } from './types.js';
+import { clientLimit, profileNames, trafficLimitsGB, type Kind } from './types.js';
 
 export const provisioning = new Mutex();
 
@@ -40,7 +40,7 @@ export async function provision(userId: string, kind: Kind, retryEmail?: string)
     const missing = ids.filter((id) => !existing.inboundIds?.includes(id));
     if (missing.length) await panel.attach(email, missing);
   } else {
-    await panel.create(email, subId, ids, group, profileNames[kind]);
+    await panel.create(email, subId, ids, group, profileNames[kind], trafficLimitsGB[kind] * 1024 ** 3);
   }
   const current = await getClient(userId, email);
   if (current.group !== group || ids.some((id) => !current.inboundIds?.includes(id))) {
