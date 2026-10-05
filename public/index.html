@@ -25,10 +25,10 @@
       <section id="dashboard" hidden>
         <section class="devices">
           <div class="section-header">
-            <h2 class="devices-heading">Устройства <span id="count" class="muted"></span></h2>
+            <h2 class="devices-heading">Клиенты <span id="count" class="muted"></span></h2>
           </div>
           <div id="devices" class="grid"></div>
-          <button id="add">Добавить устройство</button>
+          <button id="add">Добавить клиента</button>
         </section>
       </section>
     </main>
@@ -36,8 +36,10 @@
       <form id="create-form">
         <h2 id="create-title">Новое подключение</h2>
         <fieldset>
-          <legend>Протокол</legend>
+          <legend>Тип клиента</legend>
           <div class="choices">
+            <label title="VLESS · Trojan · Hysteria"><input type="radio" name="kind" value="tls" />TLS</label>
+            <label><input type="radio" name="kind" value="mtproto" />MTProto</label>
             <label><input type="radio" name="kind" value="wireguard" />WireGuard</label
             ><label><input type="radio" name="kind" value="amneziawg" />AmneziaWG</label>
           </div>

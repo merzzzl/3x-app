@@ -27,9 +27,10 @@ export function button(label, name, action, className = 'secondary') {
   element.onclick = action;
   return element;
 }
-export function protocolBadges(kind) {
+export function protocolBadges(kind, protocols = []) {
   const labels = {
-    standard: ['VLESS', 'Trojan', 'Hysteria', 'MTProto'],
+    tls: protocols.includes('mtproto') ? ['TLS', 'MTProto'] : ['TLS'],
+    mtproto: ['MTProto'],
     wireguard: ['WireGuard'],
     amneziawg: ['AmneziaWG'],
     unknown: ['Другой протокол'],
@@ -45,7 +46,7 @@ export function displayClientId(id) {
 export function card(profile, handlers) {
   const element = node('article', '', 'card');
   const heading = node('div', '', 'card-head');
-  heading.append(protocolBadges(profile.kind));
+  heading.append(protocolBadges(profile.kind, profile.protocols));
   if (profile.status !== 'ready') heading.append(node('span', 'Не завершён', 'badge'));
   element.append(heading, node('p', displayClientId(profile.id), 'muted'));
   const actions = node('div', '', 'actions');

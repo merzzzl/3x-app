@@ -2,8 +2,7 @@ import { config } from '../config.js';
 import { AppError } from '../errors.js';
 import { clientEmailPattern, standardEmail } from './naming.js';
 import { panel } from '../panel/client.js';
-
-export type Kind = 'standard' | 'wireguard' | 'amneziawg';
+import type { Kind } from './types.js';
 export type PanelClient = Awaited<ReturnType<typeof panel.clients>>[number];
 export type Inbound = Awaited<ReturnType<typeof panel.inbounds>>[number];
 
@@ -47,25 +46,32 @@ export function publicProfile(
   id: string;
   name: string;
   kind: Kind | 'unknown';
+  protocols: string[];
   status: 'ready' | 'error';
   subscriptionUrl: string | null;
 } {
   const ids = client.inboundIds ?? [];
   const protocols = inbounds.filter((item) => ids.includes(item.id)).map((item) => item.protocol);
-  const kind = /^[1-9][0-9]*@3x\.local$/.test(client.email)
-    ? 'standard'
+  const kind: Kind | 'unknown' = protocols.some((protocol) =>
+    ['vless', 'trojan', 'hysteria'].includes(protocol),
+  )
+    ? 'tls'
     : protocols.includes('amneziawg')
       ? 'amneziawg'
       : protocols.includes('wireguard')
         ? 'wireguard'
-        : 'unknown';
+        : protocols.includes('mtproto')
+          ? 'mtproto'
+          : 'unknown';
   const complete =
-    kind === 'standard'
-      ? Object.values(config.standard).every((id) => id !== undefined && ids.includes(id))
-      : kind !== 'unknown' && protocols.includes(kind);
+    kind !== 'unknown' &&
+    Object.entries(config.profiles[kind]).every(
+      ([protocol, id]) => id !== undefined && ids.includes(id) && protocols.includes(protocol),
+    );
   return {
     id: client.email,
-    name: kind === 'standard' ? 'Основной профиль' : clientName(client),
+    name: clientName(client),
+    protocols,
     kind,
     status: complete ? 'ready' : 'error',
     subscriptionUrl: subscriptionUrl(client),

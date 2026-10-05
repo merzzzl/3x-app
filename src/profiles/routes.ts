@@ -7,6 +7,7 @@ import { publicProfile, userClients } from './remote.js';
 import { provision, provisioning, removeProfile, retryProfile } from './service.js';
 import { requireUserGroup } from './groups.js';
 import { clientEmailPattern } from './naming.js';
+import { clientLimit, kinds } from './types.js';
 
 const clientEmail = z.string().regex(clientEmailPattern);
 export const profileRouter = Router();
@@ -25,27 +26,28 @@ profileRouter.get('/', async (req, res) => {
       .map((client) => publicProfile(client, inbounds))
       .sort((a, b) => a.id.localeCompare(b.id)),
     options: {
-      standard: Object.values(config.standard).every(Boolean) && connected,
-      wireguard: Boolean(config.tunnels.wireguard) && connected,
-      amneziawg: Boolean(config.tunnels.amneziawg) && connected,
-      tunnelLimit: 5,
+      ...Object.fromEntries(
+        kinds.map((kind) => [
+          kind,
+          connected &&
+            Object.entries(config.profiles[kind]).every(([protocol, id]) =>
+              inbounds.some(
+                (inbound) => inbound.id === id && inbound.enable && inbound.protocol === protocol,
+              ),
+            ),
+        ]),
+      ),
+      clientLimit,
     },
   });
-});
-profileRouter.post('/standard', async (req, res) => {
-  z.object({ userInitiated: z.literal(true) }).parse(req.body);
-  res.json(
-    await provisioning.runExclusive(() => provision(req.telegramUser.id, 'standard', 'Основной профиль')),
-  );
 });
 profileRouter.post('/', async (req, res) => {
   const { kind } = z
     .object({
-      kind: z.enum(['wireguard', 'amneziawg']),
+      kind: z.enum(kinds),
     })
     .parse(req.body);
-  const name = kind === 'wireguard' ? 'WireGuard' : 'AmneziaWG';
-  res.status(201).json(await provisioning.runExclusive(() => provision(req.telegramUser.id, kind, name)));
+  res.status(201).json(await provisioning.runExclusive(() => provision(req.telegramUser.id, kind)));
 });
 profileRouter.post('/:id/retry', async (req, res) => {
   await provisioning.runExclusive(() => retryProfile(req.telegramUser.id, clientEmail.parse(req.params.id)));

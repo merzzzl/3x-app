@@ -1,5 +1,5 @@
 import { initializeTelegram, request } from './api.js';
-import { $, node, button, card, icon, protocolBadges, displayClientId } from './ui.js';
+import { $, card, icon, displayClientId } from './ui.js';
 let list = null;
 let busy = false;
 let deleting = null;
@@ -10,31 +10,15 @@ const message = (text, error = false) => {
   $('#message').classList.toggle('error', error);
 };
 function render() {
-  const primary = list.profiles.find((p) => p.kind === 'standard');
-  const devices = list.profiles.filter((p) => p.kind !== 'standard');
   const handlers = {
     retry: (p) => mutate(`/profiles/${encodeURIComponent(p.id)}/retry`),
     remove: confirmDelete,
   };
-  const cards = [];
-  if (primary) cards.push(card(primary, handlers));
-  else {
-    const empty = node('article', '', 'card');
-    const create = button(
-      'Создать профиль',
-      'plus',
-      () => mutate('/profiles/standard', { userInitiated: true }),
-      '',
-    );
-    create.disabled = !list.options.standard;
-    empty.append(protocolBadges('standard'), node('p', 'Профиль не создан.'), create);
-    cards.push(empty);
-  }
-  $('#count').textContent = `· ${devices.length} из ${list.options.tunnelLimit}`;
-  cards.push(...devices.map((p) => card(p, handlers)));
-  $('#devices').replaceChildren(...cards);
+  $('#count').textContent = `· ${list.profiles.length} из ${list.options.clientLimit}`;
+  $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers)));
   $('#add').disabled =
-    devices.length >= list.options.tunnelLimit || !(list.options.wireguard || list.options.amneziawg);
+    list.profiles.length >= list.options.clientLimit ||
+    !['tls', 'mtproto', 'wireguard', 'amneziawg'].some((kind) => list.options[kind]);
   $('#dashboard').hidden = false;
 }
 async function refresh() {

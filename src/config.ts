@@ -30,14 +30,14 @@ const env = z
 export const config = {
   ...env,
   production: env.NODE_ENV === 'production',
-  standard: {
-    vless: env.XUI_VLESS_INBOUND_ID,
-    trojan: env.XUI_TROJAN_INBOUND_ID,
-    hysteria: env.XUI_HYSTERIA_INBOUND_ID,
-    mtproto: env.XUI_MTPROTO_INBOUND_ID,
-  },
-  tunnels: {
-    wireguard: env.XUI_WIREGUARD_INBOUND_ID,
-    amneziawg: env.XUI_AMNEZIAWG_INBOUND_ID,
+  profiles: {
+    tls: {
+      vless: env.XUI_VLESS_INBOUND_ID,
+      trojan: env.XUI_TROJAN_INBOUND_ID,
+      hysteria: env.XUI_HYSTERIA_INBOUND_ID,
+    },
+    mtproto: { mtproto: env.XUI_MTPROTO_INBOUND_ID },
+    wireguard: { wireguard: env.XUI_WIREGUARD_INBOUND_ID },
+    amneziawg: { amneziawg: env.XUI_AMNEZIAWG_INBOUND_ID },
   },
 };
