@@ -18,7 +18,7 @@ function render() {
   $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers, list.options.timeZone)));
   $('#add').disabled =
     list.profiles.length >= list.options.clientLimit ||
-    !['tls', 'mtproto', 'wireguard', 'amneziawg'].some((kind) => list.options[kind]);
+    !['tls', 'wireguard'].some((kind) => list.options[kind]);
   $('#dashboard').hidden = false;
 }
 async function refresh() {

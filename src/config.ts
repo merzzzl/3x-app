@@ -26,9 +26,7 @@ const env = z
     XUI_VLESS_INBOUND_ID: inboundId,
     XUI_TROJAN_INBOUND_ID: inboundId,
     XUI_HYSTERIA_INBOUND_ID: inboundId,
-    XUI_MTPROTO_INBOUND_ID: inboundId,
     XUI_WIREGUARD_INBOUND_ID: inboundId,
-    XUI_AMNEZIAWG_INBOUND_ID: inboundId,
   })
   .parse(process.env);
 
@@ -41,8 +39,6 @@ export const config = {
       trojan: env.XUI_TROJAN_INBOUND_ID,
       hysteria: env.XUI_HYSTERIA_INBOUND_ID,
     },
-    mtproto: { mtproto: env.XUI_MTPROTO_INBOUND_ID },
     wireguard: { wireguard: env.XUI_WIREGUARD_INBOUND_ID },
-    amneziawg: { amneziawg: env.XUI_AMNEZIAWG_INBOUND_ID },
   },
 };

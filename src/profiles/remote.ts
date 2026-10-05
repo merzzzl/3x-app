@@ -60,13 +60,9 @@ export function publicProfile(
     ['vless', 'trojan', 'hysteria'].includes(protocol),
   )
     ? 'tls'
-    : protocols.includes('amneziawg')
-      ? 'amneziawg'
-      : protocols.includes('wireguard')
-        ? 'wireguard'
-        : protocols.includes('mtproto')
-          ? 'mtproto'
-          : 'unknown';
+    : protocols.includes('wireguard')
+      ? 'wireguard'
+      : 'unknown';
   const complete =
     kind !== 'unknown' &&
     Object.entries(config.profiles[kind]).every(

@@ -27,12 +27,10 @@ export function button(label, name, action, className = 'secondary') {
   element.onclick = action;
   return element;
 }
-export function protocolBadges(kind, protocols = []) {
+export function protocolBadges(kind) {
   const labels = {
-    tls: protocols.includes('mtproto') ? ['TLS', 'MTProto'] : ['TLS'],
-    mtproto: ['MTProto'],
+    tls: ['TLS'],
     wireguard: ['WireGuard'],
-    amneziawg: ['AmneziaWG'],
     unknown: ['Другой протокол'],
   };
   const badges = node('div', '', 'protocol-badges');
@@ -50,8 +48,9 @@ export function formatExpiry(timestamp, timeZone) {
 export function card(profile, handlers, timeZone) {
   const element = node('article', '', 'card');
   const heading = node('div', '', 'card-head');
-  heading.append(protocolBadges(profile.kind, profile.protocols));
-  if (profile.status !== 'ready') heading.append(node('span', 'Не завершён', 'badge'));
+  heading.append(protocolBadges(profile.kind));
+  if (profile.status !== 'ready' && profile.kind !== 'unknown')
+    heading.append(node('span', 'Не завершён', 'badge'));
   element.append(heading, node('p', profile.email, 'muted'));
   if (profile.expiryTime > 0)
     element.append(node('p', `Действует до ${formatExpiry(profile.expiryTime, timeZone)}`, 'muted'));
