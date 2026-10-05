@@ -31,9 +31,15 @@ export async function requestAccess(userId: string) {
       chatId: config.TELEGRAM_ADMIN_CHAT_ID,
     };
     state.requests[userId] = entry;
-    save();
     try {
-      const message = await telegram<{ message_id: number }>('sendMessage', {
+      save();
+    } catch (error) {
+      delete state.requests[userId];
+      throw error;
+    }
+    let message: { message_id: number };
+    try {
+      message = await telegram<{ message_id: number }>('sendMessage', {
         chat_id: entry.chatId,
         text: `Заявка на доступ к 3X APP\nTelegram ID: ${userId}\nГруппа: ${standardEmail(userId)}`,
         reply_markup: {
@@ -45,13 +51,13 @@ export async function requestAccess(userId: string) {
           ],
         },
       });
-      state.requests[userId] = { ...entry, messageId: message.message_id };
-      save();
     } catch (error) {
       delete state.requests[userId];
       save();
       throw error;
     }
+    state.requests[userId] = { ...entry, messageId: message.message_id };
+    save();
     return { status: 'pending' };
   });
 }

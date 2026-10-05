@@ -3,6 +3,7 @@ import { config } from '../config.js';
 import { approvalConfigured, decideAccess, type Callback } from '../access/service.js';
 import { state, save } from '../access/store.js';
 import { telegram } from './api.js';
+import { errorDetails } from '../diagnostics.js';
 
 interface Update {
   update_id: number;
@@ -38,8 +39,8 @@ export async function startPolling() {
         state.offset = update.update_id + 1;
         save();
       }
-    } catch {
-      console.error('Telegram polling unavailable; retrying');
+    } catch (error) {
+      console.error('Telegram polling unavailable; retrying:', errorDetails(error));
       await setTimeout(5000);
     }
   }

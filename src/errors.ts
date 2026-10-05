@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
+import { errorDetails } from './diagnostics.js';
 
 export class AppError extends Error {
   constructor(
@@ -20,6 +21,6 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     return;
   }
   // Do not log request bodies, upstream responses or VPN credentials.
-  console.error('Request failed:', error instanceof Error ? error.name : 'UnknownError');
+  console.error('Request failed:', errorDetails(error));
   res.status(500).json({ error: 'Не удалось выполнить запрос. Попробуйте ещё раз.' });
 };
