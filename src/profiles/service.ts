@@ -5,8 +5,10 @@ import { AppError } from '../errors.js';
 import { panel } from '../panel/client.js';
 import { requireUserGroup } from './groups.js';
 import { subscriptionEmail } from './naming.js';
-import { getClient, publicProfile, ownsClient, userClients } from './remote.js';
+import { getClient, publicProfile, userClients } from './remote.js';
 import { clientLimit, profileNames, trafficLimitsGB, type Kind } from './types.js';
+
+import { subscriptionEnd } from './expiry.js';
 
 export const provisioning = new Mutex();
 
@@ -57,9 +59,11 @@ export async function retryProfile(userId: string, email: string) {
 }
 
 export async function removeProfile(userId: string, email: string) {
-  const client = await panel.find(email);
-  if (!client) return;
-  if (!ownsClient(userId, client)) throw new AppError(404, 'Клиент не найден.');
-  await panel.remove(email);
-  if (await panel.find(email)) throw new AppError(502, 'Удаление ещё не завершено. Обновите список.');
+  const client = await getClient(userId, email);
+  if (client.expiryTime !== 0) throw new AppError(409, 'Дата окончания уже установлена.');
+  const expiryTime = subscriptionEnd();
+  await panel.expire(email, client.group, expiryTime);
+  const current = await getClient(userId, email);
+  if (current.expiryTime !== expiryTime)
+    throw new AppError(502, 'Дата окончания не подтверждена панелью. Обновите список.');
 }

@@ -40,12 +40,21 @@ export function protocolBadges(kind, protocols = []) {
   badges.append(...(labels[kind] ?? labels.unknown).map((label) => node('span', label, 'protocol-badge')));
   return badges;
 }
-export function card(profile, handlers) {
+export function formatExpiry(timestamp, timeZone) {
+  return new Intl.DateTimeFormat('ru-RU', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone,
+  }).format(new Date(timestamp));
+}
+export function card(profile, handlers, timeZone) {
   const element = node('article', '', 'card');
   const heading = node('div', '', 'card-head');
   heading.append(protocolBadges(profile.kind, profile.protocols));
   if (profile.status !== 'ready') heading.append(node('span', 'Не завершён', 'badge'));
   element.append(heading, node('p', profile.email, 'muted'));
+  if (profile.expiryTime > 0)
+    element.append(node('p', `Действует до ${formatExpiry(profile.expiryTime, timeZone)}`, 'muted'));
   const actions = node('div', '', 'actions');
   if (profile.subscriptionUrl) {
     const link = new URL(profile.subscriptionUrl);
@@ -59,7 +68,10 @@ export function card(profile, handlers) {
   } else element.append(node('p', 'Ссылка на подписку не настроена.', 'muted'));
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
     actions.append(button('Завершить', 'refresh', () => handlers.retry(profile)));
-  actions.append(button('Удалить', 'delete', () => handlers.remove(profile), 'danger'));
+  const remove = button('Удалить', 'delete', () => handlers.remove(profile), 'danger');
+  remove.disabled = profile.expiryTime !== 0;
+  if (remove.disabled) remove.title = 'Дата окончания уже установлена';
+  actions.append(remove);
   element.append(actions);
   return element;
 }

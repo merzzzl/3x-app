@@ -47,6 +47,7 @@ export function publicProfile(
 ): {
   id: string;
   email: string;
+  expiryTime: number;
   name: string;
   kind: Kind | 'unknown';
   protocols: string[];
@@ -73,6 +74,7 @@ export function publicProfile(
     );
   return {
     id: client.email,
+    expiryTime: client.expiryTime,
     email: client.subId ? subscriptionEmail(client.subId) : client.email,
     name: clientName(client),
     protocols,

@@ -8,6 +8,7 @@ import { provision, provisioning, removeProfile, retryProfile } from './service.
 import { requireUserGroup } from './groups.js';
 import { clientEmailPattern } from './naming.js';
 import { clientLimit, kinds } from './types.js';
+import { subscriptionEnd } from './expiry.js';
 
 const clientEmail = z.string().regex(clientEmailPattern);
 export const profileRouter = Router();
@@ -38,6 +39,8 @@ profileRouter.get('/', async (req, res) => {
         ]),
       ),
       clientLimit,
+      cancellationTime: subscriptionEnd(),
+      timeZone: config.SUBSCRIPTION_TIMEZONE,
     },
   });
 });

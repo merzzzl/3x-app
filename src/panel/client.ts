@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { config } from '../config.js';
 import { AppError } from '../errors.js';
+import { clientDetails, expiryPayload } from './expiry.js';
 
 const envelope = z.object({ success: z.boolean(), obj: z.unknown().optional() });
 const inbound = z.object({ id: z.number(), protocol: z.string(), enable: z.boolean() });
 const record = z.object({
   email: z.string(),
   subId: z.string(),
+  expiryTime: z.number(),
   group: z.string(),
   comment: z.string().default(''),
   inboundIds: z.array(z.number()).nullable(),
@@ -90,7 +92,11 @@ export const panel = {
   attach(email: string, inboundIds: number[]) {
     return request(`clients/${encodeURIComponent(email)}/attach`, { inboundIds });
   },
-  remove(email: string) {
-    return request(`clients/del/${encodeURIComponent(email)}`, {});
+  async expire(email: string, group: string, expiryTime: number) {
+    const details = decode(clientDetails, await request(`clients/get/${encodeURIComponent(email)}`));
+    if (details.client.email !== email || details.client.group !== group)
+      throw new AppError(404, 'Клиент не найден.');
+    if (details.client.expiryTime !== 0) throw new AppError(409, 'Дата окончания уже установлена.');
+    return request(`clients/update/${encodeURIComponent(email)}`, expiryPayload(details, expiryTime));
   },
 };

@@ -1,5 +1,5 @@
 import { initializeTelegram, request } from './api.js';
-import { $, card, icon } from './ui.js';
+import { $, card, icon, formatExpiry } from './ui.js';
 let list = null;
 let busy = false;
 let deleting = null;
@@ -15,7 +15,7 @@ function render() {
     remove: confirmDelete,
   };
   $('#count').textContent = `· ${list.profiles.length} из ${list.options.clientLimit}`;
-  $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers)));
+  $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers, list.options.timeZone)));
   $('#add').disabled =
     list.profiles.length >= list.options.clientLimit ||
     !['tls', 'mtproto', 'wireguard', 'amneziawg'].some((kind) => list.options[kind]);
@@ -69,7 +69,10 @@ async function mutate(path, body, method = 'POST', dialog) {
   if (failure && dialog?.open) dialog.querySelector('.error').textContent = failure.message;
 }
 function confirmDelete(profile) {
+  if (profile.expiryTime !== 0) return;
   deleting = profile;
+  $('#delete-description').textContent =
+    `Клиент останется доступен до ${formatExpiry(list.options.cancellationTime, list.options.timeZone)} (${list.options.timeZone}). Он останется в списке и общем лимите.`;
   $('#delete-email').textContent = profile.email;
   $('#delete-dialog .error').textContent = '';
   $('#delete-dialog').showModal();
