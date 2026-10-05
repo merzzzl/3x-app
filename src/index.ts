@@ -48,7 +48,11 @@ app.use('/api/auth', authRouter);
 app.use('/api/access', accessRouter);
 app.use('/api/profiles', profileRouter);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Маршрут не найден.' }));
-app.use(express.static(resolve(import.meta.dirname, '../public')));
+app.use(
+  express.static(resolve(import.meta.dirname, '../public'), {
+    setHeaders: (res) => res.setHeader('Cache-Control', 'no-store'),
+  }),
+);
 app.use(errorHandler);
 
 const server = app.listen(config.PORT, () => console.log(`3x-app API: http://localhost:${config.PORT}`));

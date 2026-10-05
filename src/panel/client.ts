@@ -15,7 +15,18 @@ const record = z.object({
 });
 function decode<T>(schema: z.ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
-  if (!result.success) throw new AppError(502, 'Формат ответа панели отличается от API 3X-UI v3.8.5.');
+  if (!result.success) {
+    // Log schema locations only, never panel values or credentials.
+    const fields = result.error.issues.slice(0, 8).map((issue) => ({
+      field: issue.path.map((part) => (typeof part === 'number' ? '[]' : String(part))).join('.'),
+      code: issue.code,
+    }));
+    console.error('3X-UI response schema mismatch:', fields);
+    throw new AppError(
+      502,
+      'Не удалось прочитать ответ 3X-UI. Поля с ошибками указаны в журнале приложения.',
+    );
+  }
   return result.data;
 }
 
