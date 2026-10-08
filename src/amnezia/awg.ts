@@ -1,4 +1,5 @@
 import { AppError } from '../errors.js';
+import { awgFields, awgVersion } from './awg-fields.js';
 
 export function awgContainer(text: string) {
   const fields: Record<string, string> = {};
@@ -6,26 +7,17 @@ export function awgContainer(text: string) {
     const match = line.match(/^\s*([\w]+)\s*=\s*(.*?)\s*$/);
     if (match) fields[match[1]] = match[2];
   }
-  const required = [
-    'PrivateKey',
-    'PublicKey',
-    'Address',
-    'Endpoint',
-    'AllowedIPs',
-    'Jc',
-    'Jmin',
-    'Jmax',
-    'S1',
-    'S2',
-    'H1',
-    'H2',
-    'H3',
-    'H4',
-  ];
-  if (required.some((field) => !fields[field]) || (text.match(/\[Peer\]/g) ?? []).length !== 1)
+  const required = ['PrivateKey', 'PublicKey', 'Address', 'Endpoint', 'AllowedIPs'];
+  if (
+    required.some((field) => !fields[field]) ||
+    !awgFields.some((field) => fields[field]) ||
+    (text.match(/\[Peer\]/g) ?? []).length !== 1
+  )
     throw new AppError(422, 'Не удалось прочитать конфигурацию AmneziaWG. Откройте подписку.');
-  const endpoint = new URL(`http://${fields.Endpoint}`);
-  if (!endpoint.port) throw new AppError(422, 'В конфигурации AmneziaWG отсутствует порт.');
+  // A neutral scheme preserves ports 80/443, unlike http/https URL defaults.
+  const endpoint = new URL(`udp://${fields.Endpoint}`);
+  if (!endpoint.hostname || !endpoint.port || Number(endpoint.port) < 1 || Number(endpoint.port) > 65535)
+    throw new AppError(422, 'В конфигурации AmneziaWG некорректный адрес или порт.');
   const host = endpoint.hostname.replace(/^\[|\]$/g, '');
   const last: Record<string, unknown> = {
     config: text,
@@ -39,27 +31,8 @@ export function awgContainer(text: string) {
     allowed_ips: fields.AllowedIPs.split(/\s*,\s*/),
     ...(fields.PersistentKeepalive ? { persistent_keep_alive: fields.PersistentKeepalive } : {}),
   };
-  for (const key of [
-    'Jc',
-    'Jmin',
-    'Jmax',
-    'S1',
-    'S2',
-    'S3',
-    'S4',
-    'H1',
-    'H2',
-    'H3',
-    'H4',
-    'I1',
-    'I2',
-    'I3',
-    'I4',
-    'I5',
-  ])
-    if (fields[key]) last[key] = fields[key];
-  const version =
-    fields.S3 && fields.S4 ? '2' : ['I1', 'I2', 'I3', 'I4', 'I5'].some((key) => fields[key]) ? '1.5' : '';
+  for (const key of awgFields) if (fields[key]) last[key] = fields[key];
+  const version = awgVersion(fields);
   return {
     host,
     dns: fields.DNS?.split(/\s*,\s*/),

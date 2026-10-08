@@ -38,7 +38,7 @@ function telegramProxy(link: string): string | null {
   return `https://t.me/proxy?${new URLSearchParams({ server, port, secret })}`;
 }
 
-export function subscriptionActions(body: string) {
+export function subscriptionActions(body: string, description: string) {
   const vpn: string[] = [];
   const telegramLinks: string[] = [];
   for (const link of subscriptionLinks(body)) {
@@ -53,7 +53,7 @@ export function subscriptionActions(body: string) {
   let keyError: string | null = null;
   if (hasVpn) {
     try {
-      key = subscriptionKey(vpn, '3X APP');
+      key = subscriptionKey(vpn, description);
     } catch (error) {
       keyError =
         error instanceof AppError
