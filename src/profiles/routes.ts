@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { clientKey } from '../amnezia/service.js';
 import { z } from 'zod';
 import { config } from '../config.js';
 import { requireAuth } from '../auth/session.js';
@@ -39,6 +40,9 @@ profileRouter.get('/', async (req, res) => {
       timeZone: config.SUBSCRIPTION_TIMEZONE,
     },
   });
+});
+profileRouter.get('/:id/key', async (req, res) => {
+  res.json({ key: await clientKey(req.telegramUser.id, clientEmail.parse(req.params.id)) });
 });
 profileRouter.post('/', async (req, res) => {
   const { kind } = z

@@ -3,6 +3,7 @@ const paths = {
   refresh: 'M20 7v5h-5 M4 17v-5h5 M6 7a7 7 0 0 1 12-1l2 3 M4 15l2 3a7 7 0 0 0 12-1',
   plus: 'M12 5v14 M5 12h14',
   delete: 'M3 6h18 M9 6V3h6v3 M5 6l1 15h12l1-15 M10 10v7 M14 10v7',
+  copy: 'M9 9h12v12H9z M5 15H3V3h12v2',
   open: 'M14 3h7v7 M21 3l-11 11 M10 3H3v18h18v-7',
 };
 export function icon(element, name) {
@@ -46,20 +47,19 @@ export function card(profile, handlers, timeZone) {
   heading.append(protocolBadges(profile.label));
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
     heading.append(node('span', 'Не завершён', 'badge'));
-  element.append(heading, node('p', profile.email, 'muted'));
+  const select = node('button', '', 'card-select');
+  select.type = 'button';
+  select.setAttribute('aria-label', `Подключение ${profile.email}`);
+  select.setAttribute('aria-haspopup', 'dialog');
+  select.onclick = () => handlers.open(profile);
+  select.append(heading, node('span', profile.email, 'muted'));
+  element.append(select);
+  element.onclick = (event) => {
+    if (!event.target.closest('button, a')) handlers.open(profile);
+  };
   if (profile.expiryTime > 0)
     element.append(node('p', `Действует до ${formatExpiry(profile.expiryTime, timeZone)}`, 'muted'));
   const actions = node('div', '', 'actions');
-  if (profile.subscriptionUrl) {
-    const link = new URL(profile.subscriptionUrl);
-    if (['https:', 'http:'].includes(link.protocol)) {
-      const anchor = icon(node('a', 'Открыть подписку', 'button'), 'open');
-      anchor.href = link.href;
-      anchor.target = '_blank';
-      anchor.rel = 'noopener noreferrer';
-      actions.append(anchor);
-    }
-  } else element.append(node('p', 'Ссылка на подписку не настроена.', 'muted'));
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
     actions.append(button('Завершить', 'refresh', () => handlers.retry(profile)));
   const remove = button('Удалить', 'delete', () => handlers.remove(profile), 'danger');

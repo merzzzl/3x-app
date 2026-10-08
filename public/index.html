@@ -45,6 +45,19 @@
         </div>
       </form>
     </dialog>
+    <dialog id="connection-dialog" aria-labelledby="connection-title">
+      <h2 id="connection-title">Подключение</h2>
+      <p id="connection-email" class="muted"></p>
+      <div class="connection-options">
+        <a id="subscription-link" class="button secondary" target="_blank" rel="noopener noreferrer"
+          >Открыть подписку</a
+        >
+        <button id="copy-key" class="secondary" disabled>Скопировать ключ</button>
+      </div>
+      <p id="key-status" role="status" aria-live="polite"></p>
+      <p class="error" role="alert"></p>
+      <button type="button" class="quiet" data-close>Отмена</button>
+    </dialog>
     <dialog id="delete-dialog" aria-labelledby="delete-title">
       <form id="delete-form">
         <h2 id="delete-title">Удалить конфигурацию?</h2>

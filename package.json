@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "check": "tsc --noEmit && node --check public/app.js && node --check public/api.js && node --check public/ui.js",
+    "check": "tsc --noEmit && node --check public/app.js && node --check public/api.js && node --check public/ui.js && node --check public/connection.js",
     "build": "tsc",
     "start": "node dist/index.js",
     "format": "prettier --write \"src/**/*.ts\" \"public/*.{js,css,html}\" \"*.json\""

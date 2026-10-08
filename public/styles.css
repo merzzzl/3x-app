@@ -294,3 +294,30 @@ input {
     width: 100%;
   }
 }
+
+.card {
+  cursor: pointer;
+}
+.card .card-select {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.card-select .muted {
+  overflow-wrap: anywhere;
+}
+.connection-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+#connection-email {
+  overflow-wrap: anywhere;
+}

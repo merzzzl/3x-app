@@ -1,3 +1,4 @@
+import { openConnection } from './connection.js';
 import { initializeTelegram, request } from './api.js';
 import { $, node, card, icon, formatExpiry } from './ui.js';
 let list = null;
@@ -13,6 +14,7 @@ function render() {
   const handlers = {
     retry: (p) => mutate(`/profiles/${encodeURIComponent(p.id)}/retry`),
     remove: confirmDelete,
+    open: openConnection,
   };
   $('#count').textContent = `· ${list.profiles.length} из ${list.options.clientLimit}`;
   $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers, list.options.timeZone)));
