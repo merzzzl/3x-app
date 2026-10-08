@@ -7,3 +7,4 @@
 !src/**
 !public/
 !public/**
+!client-groups.json

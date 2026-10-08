@@ -37,10 +37,7 @@
         <h2 id="create-title">Новое подключение</h2>
         <fieldset>
           <legend>Тип клиента</legend>
-          <div class="choices">
-            <label title="VLESS · Trojan · Hysteria"><input type="radio" name="kind" value="tls" />TLS</label>
-            <label><input type="radio" name="kind" value="wireguard" />WireGuard</label>
-          </div>
+          <div id="client-groups" class="choices"></div>
         </fieldset>
         <p class="error" role="alert"></p>
         <div class="actions">

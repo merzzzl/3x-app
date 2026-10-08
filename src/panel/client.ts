@@ -91,6 +91,7 @@ export const panel = {
         subId,
         group,
         enable: true,
+        limitIp: 1,
         totalGB,
         expiryTime: 0,
         comment,

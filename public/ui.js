@@ -27,15 +27,10 @@ export function button(label, name, action, className = 'secondary') {
   element.onclick = action;
   return element;
 }
-export function protocolBadges(kind) {
-  const labels = {
-    tls: ['TLS'],
-    wireguard: ['WireGuard'],
-    unknown: ['Другой протокол'],
-  };
+export function protocolBadges(label) {
   const badges = node('div', '', 'protocol-badges');
-  badges.setAttribute('aria-label', 'Протоколы');
-  badges.append(...(labels[kind] ?? labels.unknown).map((label) => node('span', label, 'protocol-badge')));
+  badges.setAttribute('aria-label', 'Тип клиента');
+  badges.append(node('span', label, 'protocol-badge'));
   return badges;
 }
 export function formatExpiry(timestamp, timeZone) {
@@ -48,7 +43,7 @@ export function formatExpiry(timestamp, timeZone) {
 export function card(profile, handlers, timeZone) {
   const element = node('article', '', 'card');
   const heading = node('div', '', 'card-head');
-  heading.append(protocolBadges(profile.kind));
+  heading.append(protocolBadges(profile.label));
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
     heading.append(node('span', 'Не завершён', 'badge'));
   element.append(heading, node('p', profile.email, 'muted'));

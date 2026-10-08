@@ -7,7 +7,7 @@ import { publicProfile, userClients } from './remote.js';
 import { provision, provisioning, removeProfile, retryProfile } from './service.js';
 import { requireUserGroup } from './groups.js';
 import { clientEmailPattern } from './naming.js';
-import { clientLimit, kinds } from './types.js';
+import { clientLimit } from './types.js';
 import { subscriptionEnd } from './expiry.js';
 
 const clientEmail = z.string().regex(clientEmailPattern);
@@ -27,17 +27,13 @@ profileRouter.get('/', async (req, res) => {
       .map((client) => publicProfile(client, inbounds))
       .sort((a, b) => a.id.localeCompare(b.id)),
     options: {
-      ...Object.fromEntries(
-        kinds.map((kind) => [
-          kind,
-          connected &&
-            Object.entries(config.profiles[kind]).every(([protocol, id]) =>
-              inbounds.some(
-                (inbound) => inbound.id === id && inbound.enable && inbound.protocol === protocol,
-              ),
-            ),
-        ]),
-      ),
+      groups: config.profiles.map((group) => ({
+        id: group.id,
+        name: group.name,
+        trafficGB: group.trafficGB,
+        available:
+          connected && group.inboundIds.every((id) => inbounds.some((item) => item.id === id && item.enable)),
+      })),
       clientLimit,
       cancellationTime: subscriptionEnd(),
       timeZone: config.SUBSCRIPTION_TIMEZONE,
@@ -47,7 +43,7 @@ profileRouter.get('/', async (req, res) => {
 profileRouter.post('/', async (req, res) => {
   const { kind } = z
     .object({
-      kind: z.enum(kinds),
+      kind: z.string().min(1).max(32),
     })
     .parse(req.body);
   res.status(201).json(await provisioning.runExclusive(() => provision(req.telegramUser.id, kind)));

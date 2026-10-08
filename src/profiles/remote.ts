@@ -2,7 +2,7 @@ import { config } from '../config.js';
 import { AppError } from '../errors.js';
 import { clientEmailPattern, standardEmail, subscriptionEmail } from './naming.js';
 import { panel } from '../panel/client.js';
-import type { Kind } from './types.js';
+import { matchProfileGroup } from './types.js';
 export type PanelClient = Awaited<ReturnType<typeof panel.clients>>[number];
 export type Inbound = Awaited<ReturnType<typeof panel.inbounds>>[number];
 
@@ -49,25 +49,17 @@ export function publicProfile(
   email: string;
   expiryTime: number;
   name: string;
-  kind: Kind | 'unknown';
+  kind: string;
+  label: string;
   protocols: string[];
   status: 'ready' | 'error';
   subscriptionUrl: string | null;
 } {
   const ids = client.inboundIds ?? [];
   const protocols = inbounds.filter((item) => ids.includes(item.id)).map((item) => item.protocol);
-  const kind: Kind | 'unknown' = protocols.some((protocol) =>
-    ['vless', 'trojan', 'hysteria'].includes(protocol),
-  )
-    ? 'tls'
-    : protocols.includes('wireguard')
-      ? 'wireguard'
-      : 'unknown';
-  const complete =
-    kind !== 'unknown' &&
-    Object.entries(config.profiles[kind]).every(
-      ([protocol, id]) => id !== undefined && ids.includes(id) && protocols.includes(protocol),
-    );
+  const type = matchProfileGroup(ids);
+  const kind = type?.id ?? 'unknown';
+  const complete = Boolean(type && type.inboundIds.every((id) => ids.includes(id)));
   return {
     id: client.email,
     expiryTime: client.expiryTime,
@@ -75,6 +67,7 @@ export function publicProfile(
     name: clientName(client),
     protocols,
     kind,
+    label: type?.name ?? 'Другой протокол',
     status: complete ? 'ready' : 'error',
     subscriptionUrl: subscriptionUrl(client),
   };

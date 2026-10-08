@@ -1,0 +1,4 @@
+[
+  { "id": "tls", "name": "TLS", "inboundIds": [1, 2], "trafficGB": 200 },
+  { "id": "amnezia", "name": "AmneziaWG", "inboundIds": [4], "trafficGB": 50 }
+]

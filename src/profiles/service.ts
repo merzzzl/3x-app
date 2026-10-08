@@ -1,31 +1,29 @@
 import { randomUUID } from 'node:crypto';
 import { Mutex } from 'async-mutex';
-import { config } from '../config.js';
 import { AppError } from '../errors.js';
 import { panel } from '../panel/client.js';
 import { requireUserGroup } from './groups.js';
 import { subscriptionEmail } from './naming.js';
 import { getClient, publicProfile, userClients } from './remote.js';
-import { clientLimit, profileNames, trafficLimitsGB, type Kind } from './types.js';
+import { clientLimit, profileGroup } from './types.js';
 
 import { subscriptionEnd } from './expiry.js';
 
 export const provisioning = new Mutex();
 
-async function validateInbounds(kind: Kind) {
-  const entries = Object.entries(config.profiles[kind]);
+async function validateInbounds(kind: string) {
+  const type = profileGroup(kind);
   const inbounds = await panel.inbounds();
-  const ids: number[] = [];
-  for (const [protocol, id] of entries) {
-    if (!id || !inbounds.some((item) => item.id === id && item.enable && item.protocol === protocol)) {
-      throw new AppError(503, `Inbound для ${protocol} недоступен или имеет другой протокол.`);
+  for (const id of type.inboundIds) {
+    if (!inbounds.some((item) => item.id === id && item.enable)) {
+      throw new AppError(503, `Inbound ${id} недоступен.`);
     }
-    ids.push(id);
   }
-  return ids;
+  return type.inboundIds;
 }
 
-export async function provision(userId: string, kind: Kind, retryEmail?: string) {
+export async function provision(userId: string, kind: string, retryEmail?: string) {
+  const type = profileGroup(kind);
   const group = await requireUserGroup(userId);
   const clients = await userClients(userId);
   const existing = retryEmail ? clients.find((client) => client.email === retryEmail) : undefined;
@@ -42,7 +40,7 @@ export async function provision(userId: string, kind: Kind, retryEmail?: string)
     const missing = ids.filter((id) => !existing.inboundIds?.includes(id));
     if (missing.length) await panel.attach(email, missing);
   } else {
-    await panel.create(email, subId, ids, group, profileNames[kind], trafficLimitsGB[kind] * 1024 ** 3);
+    await panel.create(email, subId, ids, group, type.name, Math.round(type.trafficGB * 1024 ** 3));
   }
   const current = await getClient(userId, email);
   if (current.group !== group || ids.some((id) => !current.inboundIds?.includes(id))) {

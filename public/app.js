@@ -1,5 +1,5 @@
 import { initializeTelegram, request } from './api.js';
-import { $, card, icon, formatExpiry } from './ui.js';
+import { $, node, card, icon, formatExpiry } from './ui.js';
 let list = null;
 let busy = false;
 let deleting = null;
@@ -17,8 +17,7 @@ function render() {
   $('#count').textContent = `· ${list.profiles.length} из ${list.options.clientLimit}`;
   $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers, list.options.timeZone)));
   $('#add').disabled =
-    list.profiles.length >= list.options.clientLimit ||
-    !['tls', 'wireguard'].some((kind) => list.options[kind]);
+    list.profiles.length >= list.options.clientLimit || !list.options.groups.some((group) => group.available);
   $('#dashboard').hidden = false;
 }
 async function refresh() {
@@ -98,11 +97,19 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('focus', () => void autoRefresh());
 $('#add').onclick = () => {
-  const inputs = [...document.querySelectorAll('input[name="kind"]')];
-  inputs.forEach((input) => {
-    input.disabled = !list.options[input.value];
-    input.checked = false;
+  const inputs = [];
+  const labels = list.options.groups.map((group) => {
+    const label = node('label');
+    const input = node('input');
+    input.type = 'radio';
+    input.name = 'kind';
+    input.value = group.id;
+    input.disabled = !group.available;
+    label.append(input, node('span', group.name));
+    inputs.push(input);
+    return label;
   });
+  $('#client-groups').replaceChildren(...labels);
   const first = inputs.find((input) => !input.disabled);
   if (!first) return;
   first.checked = true;
