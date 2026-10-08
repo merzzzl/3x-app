@@ -20,12 +20,17 @@ profileRouter.use(async (req, _res, next) => {
 });
 profileRouter.get('/', async (req, res) => {
   const connected = Boolean(config.XUI_URL && config.XUI_API_TOKEN);
-  const [clients, inbounds] = connected
-    ? await Promise.all([userClients(req.telegramUser.id), panel.inbounds()])
-    : [[], []];
+  const [clients, inbounds, online] = connected
+    ? await Promise.all([
+        userClients(req.telegramUser.id),
+        panel.inbounds(),
+        panel.onlines().catch(() => null),
+      ])
+    : [[], [], null];
+  const onlineEmails = online ? new Set(online) : null;
   res.json({
     profiles: clients
-      .map((client) => publicProfile(client, inbounds))
+      .map((client) => publicProfile(client, inbounds, onlineEmails))
       .sort((a, b) => a.id.localeCompare(b.id)),
     options: {
       groups: config.profiles.map((group) => ({

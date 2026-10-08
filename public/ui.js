@@ -45,6 +45,8 @@ export function card(profile, handlers, timeZone) {
   const element = node('article', '', 'card');
   const heading = node('div', '', 'card-head');
   heading.append(protocolBadges(profile.label));
+  const state = profile.online === true ? 'online' : profile.online === false ? 'offline' : 'Нет данных';
+  heading.append(node('span', state, `connection-status ${profile.online === true ? 'online' : 'muted'}`));
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
     heading.append(node('span', 'Не завершён', 'badge'));
   const select = node('button', '', 'card-select');
@@ -53,6 +55,7 @@ export function card(profile, handlers, timeZone) {
   select.setAttribute('aria-haspopup', 'dialog');
   select.onclick = () => handlers.open(profile);
   select.append(heading, node('span', profile.email, 'muted'));
+  select.append(node('span', trafficLabel(profile.traffic), 'traffic-label'));
   element.append(select);
   element.onclick = (event) => {
     if (!event.target.closest('button, a')) handlers.open(profile);
@@ -62,10 +65,15 @@ export function card(profile, handlers, timeZone) {
   const actions = node('div', '', 'actions');
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
     actions.append(button('Завершить', 'refresh', () => handlers.retry(profile)));
-  const remove = button('Удалить', 'delete', () => handlers.remove(profile), 'danger');
-  remove.disabled = profile.expiryTime !== 0;
-  if (remove.disabled) remove.title = 'Дата окончания уже установлена';
-  actions.append(remove);
-  element.append(actions);
+  if (actions.childElementCount) element.append(actions);
   return element;
+}
+
+function trafficLabel(traffic) {
+  if (!traffic) return 'Трафик: нет данных';
+  if (traffic.limitBytes === 0) return 'Без лимита трафика';
+  if (traffic.remainingBytes === null) return 'Остаток: нет данных';
+  const gb = (bytes) =>
+    new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(bytes / 1024 ** 3);
+  return `Осталось ${gb(traffic.remainingBytes)} из ${gb(traffic.limitBytes)} ГБ`;
 }

@@ -13,8 +13,7 @@ const message = (text, error = false) => {
 function render() {
   const handlers = {
     retry: (p) => mutate(`/profiles/${encodeURIComponent(p.id)}/retry`),
-    remove: confirmDelete,
-    open: openConnection,
+    open: (profile) => openConnection(profile, confirmDelete),
   };
   $('#count').textContent = `· ${list.profiles.length} из ${list.options.clientLimit}`;
   $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers, list.options.timeZone)));
@@ -94,6 +93,9 @@ async function autoRefresh() {
 setInterval(() => {
   if (waiting) void autoRefresh();
 }, 5000);
+setInterval(() => {
+  if (!waiting) void autoRefresh();
+}, 30000);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) void autoRefresh();
 });

@@ -8,10 +8,19 @@ let key = '';
 let generation = 0;
 icon(copy, 'copy');
 icon(link, 'open');
+icon($('#connection-delete'), 'delete');
 
-export async function openConnection(profile) {
+export async function openConnection(profile, remove) {
   if (dialog.open) return;
   const current = ++generation;
+  const deletion = $('#connection-delete');
+  deletion.disabled = profile.expiryTime !== 0;
+  deletion.title = deletion.disabled ? 'Дата окончания уже установлена' : '';
+  deletion.onclick = () => {
+    if (deletion.disabled) return;
+    dialog.close();
+    remove(profile);
+  };
   key = '';
   copy.disabled = true;
   copy.hidden = true;

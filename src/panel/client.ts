@@ -12,6 +12,15 @@ const record = z.object({
   group: z.string(),
   comment: z.string().default(''),
   inboundIds: z.array(z.number()).nullable(),
+  totalGB: z.number().nonnegative().nullish().catch(null),
+  traffic: z
+    .object({
+      up: z.number().nonnegative(),
+      down: z.number().nonnegative(),
+      total: z.number().nonnegative(),
+    })
+    .nullish()
+    .catch(null),
 });
 function decode<T>(schema: z.ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
@@ -68,6 +77,9 @@ export const panel = {
   },
   async clients() {
     return decode(z.array(record).nullable(), await request('clients/list')) ?? [];
+  },
+  async onlines() {
+    return decode(z.array(z.string()).nullable(), await request('clients/onlines', {})) ?? [];
   },
   async groups() {
     return decode(z.array(z.object({ name: z.string() })).nullable(), await request('clients/groups')) ?? [];

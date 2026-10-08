@@ -44,6 +44,7 @@ export function subscriptionUrl(client: PanelClient): string | null {
 export function publicProfile(
   client: PanelClient,
   inbounds: Inbound[],
+  onlineEmails: Set<string> | null = null,
 ): {
   id: string;
   email: string;
@@ -53,6 +54,8 @@ export function publicProfile(
   label: string;
   protocols: string[];
   status: 'ready' | 'error';
+  online: boolean | null;
+  traffic: { limitBytes: number; remainingBytes: number | null } | null;
   subscriptionUrl: string | null;
 } {
   const ids = client.inboundIds ?? [];
@@ -60,7 +63,14 @@ export function publicProfile(
   const type = matchProfileGroup(ids);
   const kind = type?.id ?? 'unknown';
   const complete = Boolean(type && type.inboundIds.every((id) => ids.includes(id)));
+  const limitBytes = client.totalGB ?? client.traffic?.total;
+  const remainingBytes =
+    client.traffic && limitBytes !== undefined
+      ? Math.max(0, limitBytes - client.traffic.up - client.traffic.down)
+      : null;
   return {
+    online: onlineEmails?.has(client.email) ?? null,
+    traffic: limitBytes == null ? null : { limitBytes, remainingBytes },
     id: client.email,
     expiryTime: client.expiryTime,
     email: client.subId ? subscriptionEmail(client.subId) : client.email,
