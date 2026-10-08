@@ -3,24 +3,7 @@ import { AppError } from '../errors.js';
 import { awgContainer } from './awg.js';
 import { xrayContainer, xrayOutbound } from './xray.js';
 
-export function subscriptionKey(body: string, description: string) {
-  const plain = body.trim();
-  const decoded =
-    plain.includes('://') || plain.startsWith('[Interface]')
-      ? plain
-      : Buffer.from(plain, 'base64').toString('utf8').trim();
-  const links = decoded.startsWith('[Interface]')
-    ? [decoded]
-    : [
-        ...new Set(
-          decoded
-            .split(/\r?\n/)
-            .map((s) => s.trim())
-            .filter(Boolean),
-        ),
-      ];
-  if (!links.length || links.length > 100)
-    throw new AppError(422, 'Подписка пуста или содержит слишком много подключений.');
+export function subscriptionKey(links: string[], description: string) {
   const outbounds: Record<string, unknown>[] = [];
   let awg: ReturnType<typeof awgContainer> | undefined;
   let host = '';

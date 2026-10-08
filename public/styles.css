@@ -321,3 +321,11 @@ input {
 #connection-email {
   overflow-wrap: anywhere;
 }
+
+#telegram-links {
+  margin-bottom: 0;
+}
+.button[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: default;
+}
