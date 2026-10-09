@@ -68,6 +68,10 @@ export function xrayStream(p: LinkParams, address: string, protocol: string, cre
         .join(',');
     stream.tlsSettings = tls;
   } else if (security === 'reality' && !hy) {
+    // 3X-UI #6712 adds a Mihomo capability hint, not an Xray JSON option.
+    // Xray negotiates ML-KEM through its REALITY/uTLS implementation.
+    const mlkem = p.get('support-x25519mlkem768').toLowerCase();
+    if (!['', 'true', 'false', '1', '0', 't', 'f'].includes(mlkem)) throw invalid('support-x25519mlkem768');
     const publicKey = p.get('pbk');
     if (!publicKey) throw invalid('pbk');
     stream.realitySettings = {
