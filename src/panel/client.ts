@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { config } from '../config.js';
 import { AppError } from '../errors.js';
-import { clientDetails, expiryPayload } from './expiry.js';
+import { clientDetails, clientUpdatePayload, expiryPayload } from './expiry.js';
 
 const envelope = z.object({ success: z.boolean(), obj: z.unknown().optional() });
 const inbound = z.object({ id: z.number(), protocol: z.string(), enable: z.boolean() });
@@ -115,6 +115,15 @@ export const panel = {
   },
   attach(email: string, inboundIds: number[]) {
     return request(`clients/${encodeURIComponent(email)}/attach`, { inboundIds });
+  },
+  async rename(email: string, group: string, comment: string) {
+    const details = decode(clientDetails, await request(`clients/get/${encodeURIComponent(email)}`));
+    if (details.client.email !== email || details.client.group !== group)
+      throw new AppError(404, 'Клиент не найден.');
+    return request(`clients/update/${encodeURIComponent(email)}`, {
+      ...clientUpdatePayload(details),
+      comment,
+    });
   },
   async expire(email: string, group: string, expiryTime: number) {
     const details = decode(clientDetails, await request(`clients/get/${encodeURIComponent(email)}`));

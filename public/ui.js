@@ -44,7 +44,9 @@ export function formatExpiry(timestamp, timeZone) {
 export function card(profile, handlers, timeZone) {
   const element = node('article', '', 'card');
   const heading = node('div', '', 'card-head');
-  heading.append(protocolBadges(profile.label));
+  const badges = protocolBadges(profile.label);
+  badges.append(node('span', trafficLabel(profile.traffic), 'protocol-badge quota-badge'));
+  heading.append(badges);
   const state = profile.online === true ? 'online' : profile.online === false ? 'offline' : 'Нет данных';
   heading.append(node('span', state, `connection-status ${profile.online === true ? 'online' : 'muted'}`));
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
@@ -54,8 +56,7 @@ export function card(profile, handlers, timeZone) {
   select.setAttribute('aria-label', `Подключение ${profile.email}`);
   select.setAttribute('aria-haspopup', 'dialog');
   select.onclick = () => handlers.open(profile);
-  select.append(heading, node('span', profile.email, 'muted'));
-  select.append(node('span', trafficLabel(profile.traffic), 'traffic-label'));
+  select.append(heading, node('span', profile.name, 'profile-name'));
   element.append(select);
   element.onclick = (event) => {
     if (!event.target.closest('button, a')) handlers.open(profile);
@@ -66,6 +67,7 @@ export function card(profile, handlers, timeZone) {
   if (profile.status !== 'ready' && profile.kind !== 'unknown')
     actions.append(button('Завершить', 'refresh', () => handlers.retry(profile)));
   if (actions.childElementCount) element.append(actions);
+  element.append(node('p', profile.email, 'muted profile-email'));
   return element;
 }
 
@@ -75,5 +77,5 @@ function trafficLabel(traffic) {
   if (traffic.remainingBytes === null) return 'Остаток: нет данных';
   const gb = (bytes) =>
     new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(bytes / 1024 ** 3);
-  return `Осталось ${gb(traffic.remainingBytes)} из ${gb(traffic.limitBytes)} ГБ`;
+  return `${gb(traffic.remainingBytes)} ГБ осталось`;
 }

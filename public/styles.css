@@ -351,3 +351,40 @@ input {
   width: 100%;
   margin-bottom: 12px;
 }
+
+.profile-name {
+  color: #f3f4f7;
+  font-size: 18px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.profile-email {
+  font-size: 12px;
+}
+.quota-badge {
+  background: #25272e;
+  color: #c4c7d0;
+}
+.rename-row {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+input[type='text'],
+input:not([type]) {
+  width: 100%;
+  min-width: 0;
+  background: #111318;
+  color: inherit;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  font: inherit;
+  font-size: 16px;
+}
+#create-name {
+  margin: 8px 0 16px;
+}
+.rename-status {
+  font-size: 13px;
+}

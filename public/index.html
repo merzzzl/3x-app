@@ -35,6 +35,8 @@
     <dialog id="create-dialog" aria-labelledby="create-title">
       <form id="create-form">
         <h2 id="create-title">Новое подключение</h2>
+        <label for="create-name">Имя подключения</label>
+        <input id="create-name" name="name" maxlength="60" placeholder="Случайное имя" autocomplete="off" />
         <fieldset>
           <legend>Тип клиента</legend>
           <div id="client-groups" class="choices"></div>
@@ -47,6 +49,18 @@
     </dialog>
     <dialog id="connection-dialog" aria-labelledby="connection-title">
       <h2 id="connection-title">Подключение</h2>
+      <form id="rename-form">
+        <label for="connection-name">Имя подключения</label>
+        <div class="rename-row">
+          <input id="connection-name" name="name" maxlength="60" required autocomplete="off" /><button
+            type="submit"
+            class="secondary"
+          >
+            Сохранить
+          </button>
+        </div>
+        <p class="rename-status" role="status"></p>
+      </form>
       <p id="connection-email" class="muted"></p>
       <div class="connection-options">
         <a id="subscription-link" class="button secondary" target="_blank" rel="noopener noreferrer"

@@ -13,7 +13,7 @@ const message = (text, error = false) => {
 function render() {
   const handlers = {
     retry: (p) => mutate(`/profiles/${encodeURIComponent(p.id)}/retry`),
-    open: (profile) => openConnection(profile, confirmDelete),
+    open: (profile) => openConnection(profile, confirmDelete, refresh),
   };
   $('#count').textContent = `· ${list.profiles.length} из ${list.options.clientLimit}`;
   $('#devices').replaceChildren(...list.profiles.map((p) => card(p, handlers, list.options.timeZone)));
@@ -117,13 +117,15 @@ $('#add').onclick = () => {
   const first = inputs.find((input) => !input.disabled);
   if (!first) return;
   first.checked = true;
+  $('#create-name').value = '';
   $('#create-dialog .error').textContent = '';
   $('#create-dialog').showModal();
 };
 $('#create-form').onsubmit = (event) => {
   event.preventDefault();
   const kind = new FormData(event.currentTarget).get('kind');
-  if (kind) void mutate('/profiles', { kind }, 'POST', $('#create-dialog'));
+  const name = String(new FormData(event.currentTarget).get('name') ?? '').trim();
+  if (kind) void mutate('/profiles', { kind, ...(name ? { name } : {}) }, 'POST', $('#create-dialog'));
 };
 $('#delete-form').onsubmit = (event) => {
   event.preventDefault();

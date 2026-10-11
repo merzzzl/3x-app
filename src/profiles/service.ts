@@ -1,3 +1,4 @@
+import { randomDisplayName } from './display-name.js';
 import { randomUUID } from 'node:crypto';
 import { Mutex } from 'async-mutex';
 import { AppError } from '../errors.js';
@@ -22,7 +23,7 @@ async function validateInbounds(kind: string) {
   return type.inboundIds;
 }
 
-export async function provision(userId: string, kind: string, retryEmail?: string) {
+export async function provision(userId: string, kind: string, retryEmail?: string, name?: string) {
   const type = profileGroup(kind);
   const group = await requireUserGroup(userId);
   const clients = await userClients(userId);
@@ -40,7 +41,14 @@ export async function provision(userId: string, kind: string, retryEmail?: strin
     const missing = ids.filter((id) => !existing.inboundIds?.includes(id));
     if (missing.length) await panel.attach(email, missing);
   } else {
-    await panel.create(email, subId, ids, group, type.name, Math.round(type.trafficGB * 1024 ** 3));
+    await panel.create(
+      email,
+      subId,
+      ids,
+      group,
+      name ?? randomDisplayName(),
+      Math.round(type.trafficGB * 1024 ** 3),
+    );
   }
   const current = await getClient(userId, email);
   if (current.group !== group || ids.some((id) => !current.inboundIds?.includes(id))) {
@@ -64,4 +72,11 @@ export async function removeProfile(userId: string, email: string) {
   const current = await getClient(userId, email);
   if (current.expiryTime !== expiryTime)
     throw new AppError(502, 'Дата окончания не подтверждена панелью. Обновите список.');
+}
+
+export async function renameProfile(userId: string, email: string, name: string) {
+  const client = await getClient(userId, email);
+  await panel.rename(email, client.group, name);
+  if ((await getClient(userId, email)).comment !== name)
+    throw new AppError(502, 'Новое имя не подтверждено панелью. Обновите список.');
 }

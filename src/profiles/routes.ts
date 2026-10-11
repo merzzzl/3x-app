@@ -1,3 +1,4 @@
+import { displayName } from './display-name.js';
 import { Router } from 'express';
 import { clientConnections } from '../amnezia/service.js';
 import { z } from 'zod';
@@ -5,7 +6,7 @@ import { config } from '../config.js';
 import { requireAuth } from '../auth/session.js';
 import { panel } from '../panel/client.js';
 import { publicProfile, userClients } from './remote.js';
-import { provision, provisioning, removeProfile, retryProfile } from './service.js';
+import { provision, provisioning, removeProfile, retryProfile, renameProfile } from './service.js';
 import { requireUserGroup } from './groups.js';
 import { clientEmailPattern } from './naming.js';
 import { clientLimit } from './types.js';
@@ -50,12 +51,15 @@ profileRouter.get('/:id/key', async (req, res) => {
   res.json(await clientConnections(req.telegramUser.id, clientEmail.parse(req.params.id)));
 });
 profileRouter.post('/', async (req, res) => {
-  const { kind } = z
+  const { kind, name } = z
     .object({
       kind: z.string().min(1).max(32),
+      name: displayName.optional(),
     })
     .parse(req.body);
-  res.status(201).json(await provisioning.runExclusive(() => provision(req.telegramUser.id, kind)));
+  res
+    .status(201)
+    .json(await provisioning.runExclusive(() => provision(req.telegramUser.id, kind, undefined, name)));
 });
 profileRouter.post('/:id/retry', async (req, res) => {
   await provisioning.runExclusive(() => retryProfile(req.telegramUser.id, clientEmail.parse(req.params.id)));
@@ -63,5 +67,13 @@ profileRouter.post('/:id/retry', async (req, res) => {
 });
 profileRouter.delete('/:id', async (req, res) => {
   await provisioning.runExclusive(() => removeProfile(req.telegramUser.id, clientEmail.parse(req.params.id)));
+  res.sendStatus(204);
+});
+
+profileRouter.patch('/:id/name', async (req, res) => {
+  const { name } = z.object({ name: displayName }).parse(req.body);
+  await provisioning.runExclusive(() =>
+    renameProfile(req.telegramUser.id, clientEmail.parse(req.params.id), name),
+  );
   res.sendStatus(204);
 });

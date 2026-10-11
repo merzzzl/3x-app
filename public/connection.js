@@ -10,9 +10,30 @@ icon(copy, 'copy');
 icon(link, 'open');
 icon($('#connection-delete'), 'delete');
 
-export async function openConnection(profile, remove) {
+export async function openConnection(profile, remove, refresh) {
   if (dialog.open) return;
   const current = ++generation;
+  $('#connection-name').value = profile.name;
+  $('#rename-form .rename-status').textContent = '';
+  $('#rename-form').onsubmit = async (event) => {
+    event.preventDefault();
+    const save = event.currentTarget.querySelector('button');
+    if (save.disabled) return;
+    const name = $('#connection-name').value.trim();
+    if (!name) return;
+    save.disabled = true;
+    const status = $('#rename-form .rename-status');
+    status.textContent = 'Сохраняем…';
+    try {
+      await request(`/profiles/${encodeURIComponent(profile.id)}/name`, 'PATCH', { name });
+      if (generation === current) status.textContent = 'Имя сохранено';
+      await refresh();
+    } catch (error) {
+      if (generation === current) status.textContent = error.message;
+    } finally {
+      save.disabled = false;
+    }
+  };
   const deletion = $('#connection-delete');
   deletion.disabled = profile.expiryTime !== 0;
   deletion.title = deletion.disabled ? 'Дата окончания уже установлена' : '';

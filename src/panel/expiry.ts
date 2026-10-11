@@ -28,7 +28,7 @@ export const clientDetails = z.object({
   tunnelAllowedIPs: z.record(z.string(), ipList).nullish(),
 });
 
-export function expiryPayload(details: z.infer<typeof clientDetails>, expiryTime: number) {
+export function clientUpdatePayload(details: z.infer<typeof clientDetails>) {
   const client = details.client;
   let reverse;
   try {
@@ -48,6 +48,12 @@ export function expiryPayload(details: z.infer<typeof clientDetails>, expiryTime
     allowedIPsByInbound: details.tunnelAllowedIPs ?? undefined,
     reverse,
     created_at: client.createdAt,
+  };
+}
+
+export function expiryPayload(details: z.infer<typeof clientDetails>, expiryTime: number) {
+  return {
+    ...clientUpdatePayload(details),
     expiryTime,
     // Cancellation must not be undone by the panel's automatic renewal.
     reset: 0,
