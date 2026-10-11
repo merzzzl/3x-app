@@ -1,6 +1,5 @@
 import { AppError } from '../errors.js';
-import { getClient, subscriptionUrl } from '../profiles/remote.js';
-import { matchProfileGroup } from '../profiles/types.js';
+import { clientName, getClient, subscriptionUrl } from '../profiles/remote.js';
 import { subscriptionActions } from './subscription.js';
 
 export async function clientConnections(userId: string, email: string) {
@@ -21,9 +20,7 @@ export async function clientConnections(userId: string, email: string) {
       if (size > 1024 * 1024) throw new AppError(502, 'Размер подписки превышает 1 МБ.');
       chunks.push(chunk);
     }
-    const group = matchProfileGroup(client.inboundIds ?? []);
-    const name = group?.name ?? 'Подключение';
-    return subscriptionActions(Buffer.concat(chunks).toString('utf8'), `${name} (${client.email})`);
+    return subscriptionActions(Buffer.concat(chunks).toString('utf8'), clientName(client));
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError(502, 'Не удалось прочитать подключения из подписки. Откройте страницу подписки.');

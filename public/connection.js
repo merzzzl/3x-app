@@ -6,6 +6,7 @@ const copy = $('#copy-key');
 const link = $('#subscription-link');
 let key = '';
 let generation = 0;
+let keyGeneration = 0;
 icon(copy, 'copy');
 icon(link, 'open');
 icon($('#connection-delete'), 'delete');
@@ -22,11 +23,17 @@ export async function openConnection(profile, remove, refresh) {
     const name = $('#connection-name').value.trim();
     if (!name) return;
     save.disabled = true;
+    keyGeneration++;
+    key = '';
+    copy.disabled = true;
     const status = $('#rename-form .rename-status');
     status.textContent = 'Сохраняем…';
     try {
       await request(`/profiles/${encodeURIComponent(profile.id)}/name`, 'PATCH', { name });
-      if (generation === current) status.textContent = 'Имя сохранено';
+      if (generation === current) {
+        status.textContent = 'Имя сохранено';
+        await loadConnections(profile, current);
+      }
       await refresh();
     } catch (error) {
       if (generation === current) status.textContent = error.message;
@@ -55,9 +62,15 @@ export async function openConnection(profile, remove, refresh) {
   link.title = profile.subscriptionUrl ? '' : 'Ссылка на подписку не настроена';
   if (profile.subscriptionUrl) link.href = profile.subscriptionUrl;
   dialog.showModal();
+  await loadConnections(profile, current);
+}
+
+async function loadConnections(profile, current) {
+  const version = ++keyGeneration;
+  $('#key-status').textContent = 'Загружаем подключения…';
   try {
     const result = await request(`/profiles/${encodeURIComponent(profile.id)}/key`);
-    if (current !== generation || !dialog.open) return;
+    if (current !== generation || version !== keyGeneration || !dialog.open) return;
     key = result.key ?? '';
     copy.hidden = !result.hasVpn;
     copy.disabled = !key;
@@ -83,7 +96,7 @@ export async function openConnection(profile, remove, refresh) {
     );
     $('#key-status').textContent = '';
   } catch (error) {
-    if (current !== generation || !dialog.open) return;
+    if (current !== generation || version !== keyGeneration || !dialog.open) return;
     $('#key-status').textContent = '';
     dialog.querySelector('.error').textContent = error.message;
   }

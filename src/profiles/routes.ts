@@ -51,15 +51,12 @@ profileRouter.get('/:id/key', async (req, res) => {
   res.json(await clientConnections(req.telegramUser.id, clientEmail.parse(req.params.id)));
 });
 profileRouter.post('/', async (req, res) => {
-  const { kind, name } = z
+  const { kind } = z
     .object({
       kind: z.string().min(1).max(32),
-      name: displayName.optional(),
     })
     .parse(req.body);
-  res
-    .status(201)
-    .json(await provisioning.runExclusive(() => provision(req.telegramUser.id, kind, undefined, name)));
+  res.status(201).json(await provisioning.runExclusive(() => provision(req.telegramUser.id, kind)));
 });
 profileRouter.post('/:id/retry', async (req, res) => {
   await provisioning.runExclusive(() => retryProfile(req.telegramUser.id, clientEmail.parse(req.params.id)));

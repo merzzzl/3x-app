@@ -26,7 +26,7 @@ export async function getClient(userId: string, email: string) {
   return client;
 }
 
-function clientName(client: PanelClient) {
+export function clientName(client: PanelClient) {
   const comment = client.comment.trim();
   return comment || client.email;
 }

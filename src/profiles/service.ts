@@ -23,7 +23,7 @@ async function validateInbounds(kind: string) {
   return type.inboundIds;
 }
 
-export async function provision(userId: string, kind: string, retryEmail?: string, name?: string) {
+export async function provision(userId: string, kind: string, retryEmail?: string) {
   const type = profileGroup(kind);
   const group = await requireUserGroup(userId);
   const clients = await userClients(userId);
@@ -41,14 +41,7 @@ export async function provision(userId: string, kind: string, retryEmail?: strin
     const missing = ids.filter((id) => !existing.inboundIds?.includes(id));
     if (missing.length) await panel.attach(email, missing);
   } else {
-    await panel.create(
-      email,
-      subId,
-      ids,
-      group,
-      name ?? randomDisplayName(),
-      Math.round(type.trafficGB * 1024 ** 3),
-    );
+    await panel.create(email, subId, ids, group, randomDisplayName(), Math.round(type.trafficGB * 1024 ** 3));
   }
   const current = await getClient(userId, email);
   if (current.group !== group || ids.some((id) => !current.inboundIds?.includes(id))) {

@@ -382,9 +382,6 @@ input:not([type]) {
   font: inherit;
   font-size: 16px;
 }
-#create-name {
-  margin: 8px 0 16px;
-}
 .rename-status {
   font-size: 13px;
 }

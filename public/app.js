@@ -117,15 +117,13 @@ $('#add').onclick = () => {
   const first = inputs.find((input) => !input.disabled);
   if (!first) return;
   first.checked = true;
-  $('#create-name').value = '';
   $('#create-dialog .error').textContent = '';
   $('#create-dialog').showModal();
 };
 $('#create-form').onsubmit = (event) => {
   event.preventDefault();
   const kind = new FormData(event.currentTarget).get('kind');
-  const name = String(new FormData(event.currentTarget).get('name') ?? '').trim();
-  if (kind) void mutate('/profiles', { kind, ...(name ? { name } : {}) }, 'POST', $('#create-dialog'));
+  if (kind) void mutate('/profiles', { kind }, 'POST', $('#create-dialog'));
 };
 $('#delete-form').onsubmit = (event) => {
   event.preventDefault();
