@@ -77,5 +77,5 @@ function trafficLabel(traffic) {
   if (traffic.remainingBytes === null) return 'Остаток: нет данных';
   const gb = (bytes) =>
     new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(bytes / 1024 ** 3);
-  return `${gb(traffic.remainingBytes)} ГБ осталось`;
+  return `${gb(traffic.remainingBytes)} ГБ`;
 }
