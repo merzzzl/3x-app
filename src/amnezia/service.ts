@@ -1,4 +1,5 @@
 import { AppError } from '../errors.js';
+import { directFetch as fetch } from '../http.js';
 import { clientName, getClient, subscriptionUrl } from '../profiles/remote.js';
 import { subscriptionActions } from './subscription.js';
 

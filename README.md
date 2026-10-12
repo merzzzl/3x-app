@@ -36,6 +36,7 @@ TRUST_PROXY_HOPS=0
 SUBSCRIPTION_TIMEZONE=Europe/Moscow
 
 TELEGRAM_BOT_TOKEN=
+TELEGRAM_PROXY_URL=
 TELEGRAM_ADMIN_CHAT_ID=
 TELEGRAM_ADMIN_IDS=
 APPROVALS_FILE=./data/approvals.json
@@ -48,6 +49,20 @@ XUI_SUBSCRIPTION_URL=https://subscription.example.com/sub/
 `XUI_URL` — базовый адрес панели, включая её префикс пути, без `/panel/api`. `XUI_SUBSCRIPTION_URL` — базовый адрес страницы подписки без идентификатора клиента. Типы клиентов и inbound’ы задаются в `client-groups.json`.
 
 `TELEGRAM_ADMIN_CHAT_ID` — чат для заявок. `TELEGRAM_ADMIN_IDS` — Telegram ID пользователей, которым разрешено подтверждать заявки, через запятую. Для личного чата администратор должен сначала отправить боту `/start`.
+
+`TELEGRAM_PROXY_URL` — необязательный HTTP/HTTPS-прокси только для Telegram Bot API
+(polling, заявки администратору, обработка кнопок). Например:
+
+```dotenv
+TELEGRAM_PROXY_URL=http://login:password@3x-ui:37280
+```
+
+Поддерживается и `https://login:password@proxy.example.com:443`, а также прокси без авторизации.
+Специальные символы логина и пароля нужно URL-кодировать. HTTPS-прокси должен иметь действительный сертификат.
+При пустом значении Telegram подключается напрямую. Запросы к 3X-UI и подпискам всегда идут напрямую;
+общие `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` и `NODE_USE_ENV_PROXY` не управляют этими запросами приложения.
+Для этой настройки они не нужны. После изменения `.env` пересоздайте контейнер:
+`sudo docker compose up -d --force-recreate`. Настройка относится к серверным запросам, а не к Telegram на телефоне.
 
 Для открытия через Telegram опубликуйте сервер по HTTPS, укажите этот адрес без завершающего слеша в `APP_ORIGIN` и настройте кнопку меню Mini App через BotFather. За одним доверенным reverse proxy установите `TRUST_PROXY_HOPS=1`; без него оставьте `0`. При смене адреса временного туннеля обновите `.env`, кнопку бота и перезапустите сервер.
 

@@ -13,6 +13,18 @@ const env = z
     PORT: z.coerce.number().int().min(1).max(65535).default(8081),
     APP_ORIGIN: z.url().default('http://localhost:8081'),
     TELEGRAM_BOT_TOKEN: z.string().optional(),
+    TELEGRAM_PROXY_URL: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z
+        .url()
+        .refine((value) => {
+          const url = new URL(value);
+          return (
+            ['http:', 'https:'].includes(url.protocol) && url.pathname === '/' && !url.search && !url.hash
+          );
+        }, 'TELEGRAM_PROXY_URL must be an HTTP/HTTPS proxy URL without a path')
+        .optional(),
+    ),
     TELEGRAM_ADMIN_CHAT_ID: z.string().default(''),
     TELEGRAM_ADMIN_IDS: z.string().default(''),
     CLIENT_GROUPS_FILE: z.string().default('./client-groups.json'),

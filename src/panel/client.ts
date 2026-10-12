@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import type { Response } from 'undici';
+import { directFetch as fetch } from '../http.js';
 import { config } from '../config.js';
 import { AppError } from '../errors.js';
 import { clientDetails, clientUpdatePayload, expiryPayload } from './expiry.js';

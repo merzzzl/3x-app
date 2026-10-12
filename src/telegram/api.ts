@@ -1,6 +1,9 @@
 import { config } from '../config.js';
 import { AppError } from '../errors.js';
 import { errorDetails } from '../diagnostics.js';
+import { createHttpClient } from '../http.js';
+
+const fetch = createHttpClient(config.TELEGRAM_PROXY_URL);
 
 function safeDescription(value: unknown) {
   if (typeof value !== 'string') return undefined;
@@ -20,6 +23,7 @@ export async function telegram<T>(method: string, body: object): Promise<T> {
   try {
     const response = await fetch(`https://api.telegram.org/bot${config.TELEGRAM_BOT_TOKEN}/${method}`, {
       method: 'POST',
+      redirect: 'error',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(method === 'getUpdates' ? 35000 : 15000),
