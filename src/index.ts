@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import express from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
@@ -9,6 +8,7 @@ import { authRouter } from './auth/routes.js';
 import { checkOrigin } from './auth/session.js';
 import { profileRouter } from './profiles/routes.js';
 import { errorHandler } from './errors.js';
+import { html, scriptHash } from './web.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -18,7 +18,7 @@ app.use(
     frameguard: false,
     contentSecurityPolicy: {
       directives: {
-        'script-src': ["'self'", 'https://telegram.org'],
+        'script-src': [scriptHash, 'https://telegram.org'],
         'frame-ancestors': ["'self'", 'https://web.telegram.org', 'https://*.telegram.org'],
         'style-src': ["'self'", "'unsafe-inline'"],
         'img-src': ["'self'", 'data:'],
@@ -48,11 +48,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/access', accessRouter);
 app.use('/api/profiles', profileRouter);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Маршрут не найден.' }));
-app.use(
-  express.static(resolve(import.meta.dirname, '../public'), {
-    setHeaders: (res) => res.setHeader('Cache-Control', 'no-store'),
-  }),
-);
+app.get('/', (_req, res) => res.set('Cache-Control', 'no-store').type('html').send(html));
 app.use(errorHandler);
 
 const server = app.listen(config.PORT, () => console.log(`3x-app API: http://localhost:${config.PORT}`));

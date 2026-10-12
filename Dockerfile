@@ -6,6 +6,7 @@ RUN npm ci
 COPY tsconfig.json client-groups.json ./
 COPY src ./src
 COPY public ./public
+COPY scripts ./scripts
 RUN npm run check && npm run build
 RUN npm prune --omit=dev && npm cache clean --force
 
@@ -15,7 +16,6 @@ WORKDIR /app
 COPY --from=build /app/package.json /app/client-groups.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/public ./public
 RUN mkdir /app/data && chown node:node /app/data
 USER node
 EXPOSE 8081

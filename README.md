@@ -77,7 +77,7 @@ npm run build
 npm start
 ```
 
-В production установите `NODE_ENV=production`. Для запуска нужны `dist/`, `public/`, `client-groups.json`, `package.json`, установленные production-зависимости и `.env`. Команды выполняются из корня проекта. Проверка доступности: `GET /api/health`.
+В production установите `NODE_ENV=production`. Для запуска нужны `dist/` (включая `dist/web/index.html`), `client-groups.json`, `package.json`, установленные production-зависимости и `.env`. Команды выполняются из корня проекта. Проверка доступности: `GET /api/health`.
 
 Запускайте один экземпляр приложения: обработчик подтверждений использует Telegram long polling, а блокировки операций находятся в памяти процесса. Бот не должен одновременно использовать webhook или другой обработчик `getUpdates`.
 
@@ -92,7 +92,14 @@ npm start
 - `src/telegram/` — Bot API и обработка кнопок.
 - `src/panel/` — клиент API 3X-UI.
 - `src/profiles/` — получение, создание и удаление конфигураций.
-- `public/` — интерфейс Mini App.
+- `public/` — раздельные исходники интерфейса Mini App.
+- `scripts/` — сборка интерфейса в один HTML и запуск разработки.
+
+`npm run build` собирает сервер и `dist/web/index.html` со встроенными CSS/JavaScript.
+Telegram SDK загружается отдельно с `telegram.org`. Встроенный JavaScript разрешён CSP по SHA-256, без `unsafe-inline`.
+Сервер отдаёт интерфейс только по `/`; отдельные `/app.js`, `/styles.css`, `/index.html` больше не обслуживаются.
+Для Pangolin достаточно разрешить `/` и `/api/*`.
+`npm run dev` пересобирает страницу и перезапускает сервер при изменении исходников; затем обновите страницу браузера.
 
 `npm run format` форматирует исходники. `npm run check` проверяет TypeScript и синтаксис браузерного JavaScript без обращений к панели.
 
