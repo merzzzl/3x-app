@@ -12,6 +12,11 @@ const env = z
       .refine((zone) => IANAZone.isValidZone(zone), 'Invalid timezone'),
     PORT: z.coerce.number().int().min(1).max(65535).default(8081),
     APP_ORIGIN: z.url().default('http://localhost:8081'),
+    APP_BASE_PATH: z
+      .string()
+      .regex(/^\/(?:[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\/?)?$/)
+      .default('/')
+      .transform((path) => path.replace(/\/$/, '') || '/'),
     TELEGRAM_BOT_TOKEN: z.string().optional(),
     TELEGRAM_PROXY_URL: z.preprocess(
       (value) => (value === '' ? undefined : value),

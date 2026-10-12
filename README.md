@@ -33,6 +33,7 @@ npm run dev
 NODE_ENV=development
 PORT=8081
 APP_ORIGIN=http://localhost:8081
+APP_BASE_PATH=/
 TRUST_PROXY_HOPS=0
 SUBSCRIPTION_TIMEZONE=Europe/Moscow
 
@@ -77,7 +78,7 @@ npm run build
 npm start
 ```
 
-В production установите `NODE_ENV=production`. Для запуска нужны `dist/` (включая `dist/web/index.html`), `client-groups.json`, `package.json`, установленные production-зависимости и `.env`. Команды выполняются из корня проекта. Проверка доступности: `GET /api/health`.
+В production установите `NODE_ENV=production`. Для запуска нужны `dist/` (включая `dist/web/index.html`), `client-groups.json`, `package.json`, установленные production-зависимости и `.env`. Команды выполняются из корня проекта. Docker healthcheck проверяет страницу по `APP_BASE_PATH`; отдельного `/api/health` нет.
 
 Запускайте один экземпляр приложения: обработчик подтверждений использует Telegram long polling, а блокировки операций находятся в памяти процесса. Бот не должен одновременно использовать webhook или другой обработчик `getUpdates`.
 
@@ -97,8 +98,14 @@ npm start
 
 `npm run build` собирает сервер и `dist/web/index.html` со встроенными CSS/JavaScript.
 Telegram SDK загружается отдельно с `telegram.org`. Встроенный JavaScript разрешён CSP по SHA-256, без `unsafe-inline`.
-Сервер отдаёт интерфейс только по `/`; отдельные `/app.js`, `/styles.css`, `/index.html` больше не обслуживаются.
-Для Pangolin достаточно разрешить `/` и `/api/*`.
+Сервер отдаёт интерфейс по `APP_BASE_PATH` (по умолчанию `/`); отдельные JS/CSS и `/index.html` не обслуживаются.
+Все вызовы API идут через один `POST <APP_BASE_PATH>/api` с JSON `{ "method": "GET", "path": "/profiles" }`.
+Для операций с данными добавляется поле `body`. Проверки Telegram, Origin и владельца остаются обязательными.
+
+Например, задайте `APP_BASE_PATH=/qwhiuebuiwfqiewf`. Тогда для Pangolin нужны только
+`GET /qwhiuebuiwfqiewf` (также HEAD для проверки доступности) и `POST /qwhiuebuiwfqiewf/api`.
+Старые `/` и `/api/*` возвращают 404. `APP_ORIGIN` остаётся без пути. Обновите URL Mini App в BotFather
+на `https://ваш-домен/qwhiuebuiwfqiewf` и пересоздайте контейнер. Пересборка при смене пути не требуется.
 `npm run dev` пересобирает страницу и перезапускает сервер при изменении исходников; затем обновите страницу браузера.
 
 `npm run format` форматирует исходники. `npm run check` проверяет TypeScript и синтаксис браузерного JavaScript без обращений к панели.

@@ -10,11 +10,11 @@ export async function request(path, method = 'GET', body) {
   if (!initData) throw new Error('Откройте приложение через Telegram-бота.');
   let response;
   try {
-    response = await fetch(`/api${path}`, {
-      method,
+    response = await fetch(`${window.location.pathname.replace(/\/$/, '')}/api`, {
+      method: 'POST',
       credentials: 'omit',
       headers: { 'Content-Type': 'application/json', Authorization: `tma ${initData}` },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: JSON.stringify({ path, method, body }),
     });
   } catch {
     throw new Error('Нет связи с сервером. Повторите попытку.');
