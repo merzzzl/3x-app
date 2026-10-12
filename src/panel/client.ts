@@ -11,6 +11,7 @@ const record = z.object({
   email: z.string(),
   subId: z.string(),
   expiryTime: z.number(),
+  createdAt: z.number().nonnegative().nullish().catch(null),
   group: z.string(),
   comment: z.string().default(''),
   inboundIds: z.array(z.number()).nullable(),

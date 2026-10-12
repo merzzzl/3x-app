@@ -31,8 +31,8 @@ profileRouter.get('/', async (req, res) => {
   const onlineEmails = online ? new Set(online) : null;
   res.json({
     profiles: clients
-      .map((client) => publicProfile(client, inbounds, onlineEmails))
-      .sort((a, b) => a.id.localeCompare(b.id)),
+      .sort((a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0) || a.email.localeCompare(b.email))
+      .map((client) => publicProfile(client, inbounds, onlineEmails)),
     options: {
       groups: config.profiles.map((group) => ({
         id: group.id,
