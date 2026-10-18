@@ -47,7 +47,7 @@ export function subscriptionActions(body: string, description: string) {
     else vpn.push(link);
   }
   const hasVpn = vpn.some(
-    (link) => /^(vless|trojan|hysteria2|hy2|vpn):\/\//.test(link) || link.startsWith('[Interface]'),
+    (link) => /^(vless|trojan|hysteria2|hy2|vpn|wireguard):\/\//.test(link) || link.startsWith('[Interface]'),
   );
   let key: string | null = null;
   let keyError: string | null = null;

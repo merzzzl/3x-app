@@ -1,34 +1,44 @@
 import { deflateSync } from 'node:zlib';
 import { AppError } from '../errors.js';
-import { awgContainer } from './awg.js';
+import { wireguardContainer } from './wireguard.js';
+import { wireguardLinkConfig } from './wireguard-link.js';
 import { xrayContainer, xrayOutbound } from './xray.js';
 
 export function subscriptionKey(links: string[], description: string) {
   const outbounds: Record<string, unknown>[] = [];
-  let awg: ReturnType<typeof awgContainer> | undefined;
+  const tunnels = new Map<string, ReturnType<typeof wireguardContainer>>();
   let host = '';
   for (const link of links) {
-    if (link.startsWith('vpn://') || link.startsWith('[Interface]')) {
-      if (awg) throw new AppError(422, 'В одном ключе поддерживается только один контейнер AmneziaWG.');
-      const text = link.startsWith('vpn://')
-        ? Buffer.from(link.slice(6), 'base64url').toString('utf8')
-        : link;
-      awg = awgContainer(text);
+    if (/^(vpn|wireguard):\/\//.test(link) || link.startsWith('[Interface]')) {
+      const text = link.startsWith('wireguard://')
+        ? wireguardLinkConfig(link)
+        : link.startsWith('vpn://')
+          ? Buffer.from(link.slice(6), 'base64url').toString('utf8')
+          : link;
+      const tunnel = wireguardContainer(text);
+      const type = tunnel.container.container;
+      if (tunnels.has(type))
+        throw new AppError(422, 'В одном ключе поддерживается не более одного WireGuard и одного AmneziaWG.');
+      tunnels.set(type, tunnel);
     } else {
       outbounds.push(xrayOutbound(link, outbounds.length));
       host ||= new URL(link).hostname.replace(/^\[|\]$/g, '');
     }
   }
+  const ordered = ['amnezia-awg', 'amnezia-wireguard'].flatMap((type) => {
+    const tunnel = tunnels.get(type);
+    return tunnel ? [tunnel] : [];
+  });
   const containers = [
     ...(outbounds.length ? [xrayContainer(outbounds)] : []),
-    ...(awg ? [awg.container] : []),
+    ...ordered.map((tunnel) => tunnel.container),
   ];
   const payload = Buffer.from(
     JSON.stringify({
       description,
-      hostName: host || awg?.host,
-      dns1: awg?.dns?.[0] ?? '1.1.1.1',
-      dns2: awg?.dns?.[1] ?? '1.0.0.1',
+      hostName: host || ordered[0]?.host,
+      dns1: ordered[0]?.dns?.[0] ?? '1.1.1.1',
+      dns2: ordered[0]?.dns?.[1] ?? '1.0.0.1',
       defaultContainer: containers[0].container,
       containers,
     }),
